@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 import requests
 from datetime import datetime, timedelta
-from src.config import Config
+from config import Config
 
 integracoes_bp = Blueprint('integracoes', __name__)
 

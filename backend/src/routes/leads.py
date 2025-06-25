@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from src.models import Lead
+from models.lead import Lead
+from datetime import datetime
 
-leads_bp = Blueprint('leads', __name__)
+leads_bp = Blueprint("leads", __name__)
 
-@leads_bp.route('/', methods=['GET'])
+@leads_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_leads():
     """Listar todos os leads"""
@@ -14,7 +15,7 @@ def get_leads():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@leads_bp.route('/', methods=['POST'])
+@leads_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_lead():
     """Criar novo lead"""
@@ -22,7 +23,7 @@ def create_lead():
         data = request.get_json()
         
         # Validações básicas
-        required_fields = ['nome', 'cargo', 'empresa']
+        required_fields = ["nome", "cargo", "empresa"]
         for field in required_fields:
             if not data.get(field):
                 return jsonify({"error": f"Campo {field} é obrigatório"}), 400
@@ -36,13 +37,13 @@ def create_lead():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@leads_bp.route('/capturar', methods=['POST'])
+@leads_bp.route("/capturar", methods=["POST"])
 @jwt_required()
 def capturar_leads():
     """Simular captura automática de leads do LinkedIn"""
     try:
         data = request.get_json()
-        filtros = data.get('filtros', {})
+        filtros = data.get("filtros", {})
         
         # Simular captura (em produção, integraria com LinkedIn API)
         leads_simulados = [
@@ -79,7 +80,7 @@ def capturar_leads():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@leads_bp.route('/exportar', methods=['GET'])
+@leads_bp.route("/exportar", methods=["GET"])
 @jwt_required()
 def exportar_leads():
     """Exportar leads em formato CSV"""
@@ -97,7 +98,7 @@ def exportar_leads():
                 "Telefone": lead.get("telefone", ""),
                 "Localização": lead.get("localizacao", ""),
                 "Status": lead.get("status", ""),
-                "Data Criação": lead.get("created_at", "").strftime("%d/%m/%Y %H:%M") if lead.get("created_at") else ""
+                "Data Criação": lead.get("created_at", "") # .strftime("%d/%m/%Y %H:%M") if lead.get("created_at") else ""
             })
         
         return jsonify({

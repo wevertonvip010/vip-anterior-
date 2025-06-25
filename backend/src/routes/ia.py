@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 import openai
 import os
-from src.config import Config
+from config import Config
 
 ia_bp = Blueprint('ia', __name__)
 

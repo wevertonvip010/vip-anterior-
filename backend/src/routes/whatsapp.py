@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 import requests
 import json
 from datetime import datetime
-from src.config import Config
+from config import Config
 
 whatsapp_bp = Blueprint('whatsapp', __name__)
 

@@ -1,11 +1,17 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from src.models import Cliente, Orcamento, Financeiro, GuardaMoveis, Estoque
+from models.cliente import Cliente
+from models.orcamento import Orcamento
+from models.financeiro import Financeiro
+from models.guardamoveis import GuardaMoveis
+from models.estoque import Estoque
+from models.lead import Lead
+from database import db
 from datetime import datetime, timedelta
 
-dashboard_bp = Blueprint('dashboard', __name__)
+dashboard_bp = Blueprint("dashboard", __name__)
 
-@dashboard_bp.route('/metricas', methods=['GET'])
+@dashboard_bp.route("/metricas", methods=["GET"])
 @jwt_required()
 def get_metricas():
     """Obter métricas principais do dashboard"""
@@ -17,14 +23,13 @@ def get_metricas():
         mudancas_agendadas = 24
         
         # Contar visitas pendentes
-        clientes = Cliente.get_all()
-        visitas_pendentes = len([c for c in clientes if c.get('status') == 'Visita Agendada'])
+        visitas_pendentes = Cliente.query.filter(Cliente.status == "Visita Agendada").count()
         
-        # Contar boxes ocupados (simulado)
-        boxes_ocupados = 42
+        # Contar boxes ocupados
+        boxes_ocupados = GuardaMoveis.query.filter(GuardaMoveis.status == "Ocupado").count()
         
-        # Calcular faturamento mensal (simulado)
-        faturamento_mensal = 45320.00
+        # Calcular faturamento mensal
+        faturamento_mensal = db.session.query(db.func.sum(Financeiro.valor)).filter(Financeiro.tipo == "receita", Financeiro.data >= data_limite).scalar() or 0
         
         return jsonify({
             "metricas": {
@@ -38,7 +43,7 @@ def get_metricas():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@dashboard_bp.route('/atividades-recentes', methods=['GET'])
+@dashboard_bp.route("/atividades-recentes", methods=["GET"])
 @jwt_required()
 def get_atividades_recentes():
     """Obter atividades recentes"""
@@ -76,14 +81,14 @@ def get_atividades_recentes():
         
         # Converter datetime para string
         for atividade in atividades:
-            atividade['data'] = atividade['data'].isoformat()
+            atividade["data"] = atividade["data"].isoformat()
         
         return jsonify({"atividades": atividades}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@dashboard_bp.route('/calendario', methods=['GET'])
+@dashboard_bp.route("/calendario", methods=["GET"])
 @jwt_required()
 def get_calendario():
     """Obter eventos do calendário"""
@@ -132,7 +137,7 @@ def get_calendario():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@dashboard_bp.route('/notificacoes', methods=['GET'])
+@dashboard_bp.route("/notificacoes", methods=["GET"])
 @jwt_required()
 def get_notificacoes():
     """Obter notificações do sistema"""
@@ -167,37 +172,34 @@ def get_notificacoes():
         
         # Converter datetime para string
         for notificacao in notificacoes:
-            notificacao['data'] = notificacao['data'].isoformat()
+            notificacao["data"] = notificacao["data"].isoformat()
         
         return jsonify({"notificacoes": notificacoes}), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@dashboard_bp.route('/resumo-modulos', methods=['GET'])
+@dashboard_bp.route("/resumo-modulos", methods=["GET"])
 @jwt_required()
 def get_resumo_modulos():
     """Obter resumo dos módulos com badges de notificação"""
     try:
-        # Contar itens pendentes em cada módulo
-        clientes = Cliente.get_all()
-        
         resumo = {
-            "clientes": len([c for c in clientes if c.get('status') == 'Novo']),
-            "visitas": len([c for c in clientes if c.get('status') == 'Visita Agendada']),
-            "orcamentos": 4,  # Simulado
-            "contratos": 5,   # Simulado
-            "ordens_servico": 6,  # Simulado
-            "self_storage": 7,    # Simulado
-            "financeiro": 8,      # Simulado
-            "marketing": 9,       # Simulado
-            "vendas": 10,         # Simulado
-            "estoque": 11,        # Simulado
-            "programa_pontos": 12, # Simulado
-            "calendario": 13,      # Simulado
-            "graficos": 14,        # Simulado
-            "configuracoes": 15,   # Simulado
-            "leads_linkedin": 0    # Novo módulo
+            "clientes": Cliente.query.filter_by(status="Novo").count(),
+            "visitas": Cliente.query.filter_by(status="Visita Agendada").count(),
+            "orcamentos": Orcamento.query.filter_by(status="Pendente").count(),
+            "contratos": 0, # Simulado, adicionar modelo de Contrato
+            "ordens_servico": 0, # Simulado, adicionar modelo de OrdemServico
+            "self_storage": GuardaMoveis.query.filter_by(status="Ocupado").count(),
+            "financeiro": Financeiro.query.filter_by(tipo="despesa").count(), # Exemplo: despesas pendentes
+            "marketing": 0, # Simulado
+            "vendas": 0, # Simulado
+            "estoque": Estoque.query.filter(Estoque.quantidade < 20).count(), # Exemplo: itens com estoque baixo
+            "programa_pontos": 0, # Simulado
+            "calendario": 0, # Simulado
+            "graficos": 0, # Simulado
+            "configuracoes": 0, # Simulado
+            "leads_linkedin": Lead.query.filter_by(status="Novo").count()
         }
         
         return jsonify({"resumo_modulos": resumo}), 200

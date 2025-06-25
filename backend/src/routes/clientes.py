@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.models import Cliente
+from models.cliente import Cliente
 from datetime import datetime
 
-clientes_bp = Blueprint('clientes', __name__)
+clientes_bp = Blueprint("clientes", __name__)
 
-@clientes_bp.route('/', methods=['GET'])
+@clientes_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_clientes():
     """Listar todos os clientes"""
@@ -15,7 +15,7 @@ def get_clientes():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@clientes_bp.route('/', methods=['POST'])
+@clientes_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_cliente():
     """Criar novo cliente"""
@@ -23,7 +23,7 @@ def create_cliente():
         data = request.get_json()
         
         # Validações básicas
-        required_fields = ['nome', 'email', 'telefone']
+        required_fields = ["nome", "email", "telefone"]
         for field in required_fields:
             if not data.get(field):
                 return jsonify({"error": f"Campo {field} é obrigatório"}), 400
@@ -37,7 +37,7 @@ def create_cliente():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@clientes_bp.route('/<cliente_id>', methods=['GET'])
+@clientes_bp.route("/<int:cliente_id>", methods=["GET"])
 @jwt_required()
 def get_cliente(cliente_id):
     """Obter cliente por ID"""
@@ -50,7 +50,7 @@ def get_cliente(cliente_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@clientes_bp.route('/<cliente_id>', methods=['PUT'])
+@clientes_bp.route("/<int:cliente_id>", methods=["PUT"])
 @jwt_required()
 def update_cliente(cliente_id):
     """Atualizar cliente"""
@@ -65,14 +65,14 @@ def update_cliente(cliente_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@clientes_bp.route('/<cliente_id>/status', methods=['PUT'])
+@clientes_bp.route("/<int:cliente_id>/status", methods=["PUT"])
 @jwt_required()
 def update_status_cliente(cliente_id):
     """Atualizar status do cliente"""
     try:
         data = request.get_json()
-        status = data.get('status')
-        justificativa = data.get('justificativa', '')
+        status = data.get("status")
+        justificativa = data.get("justificativa", "")
         
         if not status:
             return jsonify({"error": "Status é obrigatório"}), 400
@@ -97,21 +97,21 @@ def update_status_cliente(cliente_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@clientes_bp.route('/pre-cadastro', methods=['POST'])
+@clientes_bp.route("/pre-cadastro", methods=["POST"])
 def pre_cadastro():
     """Endpoint para pré-cadastro de clientes (sem autenticação)"""
     try:
         data = request.get_json()
         
         # Validações básicas
-        required_fields = ['nome', 'email']
+        required_fields = ["nome", "email"]
         for field in required_fields:
             if not data.get(field):
                 return jsonify({"error": f"Campo {field} é obrigatório"}), 400
         
         # Adicionar dados padrão para pré-cadastro
-        data['status'] = 'Novo'
-        data['fonte'] = data.get('fonte', 'Site/Instagram')
+        data["status"] = "Novo"
+        data["fonte"] = data.get("fonte", "Site/Instagram")
         
         cliente_id = Cliente.create(data)
         return jsonify({
@@ -121,4 +121,5 @@ def pre_cadastro():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 

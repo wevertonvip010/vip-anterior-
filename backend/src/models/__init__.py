@@ -1,11 +1,14 @@
+
+
+
+from database import db
 from .user import User
+from .cliente import Cliente
+from .lead import Lead
+from .licitacao import Licitacao
+from .orcamento import Orcamento
+from .financeiro import Financeiro
+from .guardamoveis import GuardaMoveis
+from .estoque import Estoque
 
-# Importar classes do models.py principal
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-
-from ..models import Cliente, Lead, Licitacao, Orcamento, Financeiro, GuardaMoveis, Estoque
-
-__all__ = ['User', 'Cliente', 'Lead', 'Licitacao', 'Orcamento', 'Financeiro', 'GuardaMoveis', 'Estoque']
 

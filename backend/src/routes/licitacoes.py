@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from src.models import Licitacao
+from models.licitacao import Licitacao
 from datetime import datetime
 
-licitacoes_bp = Blueprint('licitacoes', __name__)
+licitacoes_bp = Blueprint("licitacoes", __name__)
 
-@licitacoes_bp.route('/', methods=['GET'])
+@licitacoes_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_licitacoes():
     """Listar todas as licitações"""
@@ -15,13 +15,13 @@ def get_licitacoes():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@licitacoes_bp.route('/buscar', methods=['POST'])
+@licitacoes_bp.route("/buscar", methods=["POST"])
 @jwt_required()
 def buscar_licitacoes():
     """Simular busca automática de licitações"""
     try:
         data = request.get_json()
-        palavras_chave = data.get('palavras_chave', ['mudança', 'remoção', 'transporte'])
+        palavras_chave = data.get("palavras_chave", ["mudança", "remoção", "transporte"])
         
         # Simular busca em portais (em produção, faria scraping real)
         licitacoes_simuladas = [
@@ -30,8 +30,8 @@ def buscar_licitacoes():
                 "orgao": "Prefeitura Municipal de São Paulo",
                 "numero": "001/2025",
                 "valor_estimado": 150000.00,
-                "data_abertura": datetime(2025, 7, 15),
-                "data_limite": datetime(2025, 7, 30),
+                "data_abertura": datetime(2025, 7, 15).isoformat(),
+                "data_limite": datetime(2025, 7, 30).isoformat(),
                 "status": "Aberta",
                 "portal": "ComprasNet",
                 "url": "https://comprasnet.gov.br/licitacao/001-2025",
@@ -43,8 +43,8 @@ def buscar_licitacoes():
                 "orgao": "Secretaria de Saúde - RJ",
                 "numero": "002/2025",
                 "valor_estimado": 85000.00,
-                "data_abertura": datetime(2025, 7, 20),
-                "data_limite": datetime(2025, 8, 5),
+                "data_abertura": datetime(2025, 7, 20).isoformat(),
+                "data_limite": datetime(2025, 8, 5).isoformat(),
                 "status": "Aberta",
                 "portal": "SIGA-RJ",
                 "url": "https://siga.rj.gov.br/licitacao/002-2025",
@@ -67,15 +67,15 @@ def buscar_licitacoes():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@licitacoes_bp.route('/monitorar', methods=['POST'])
+@licitacoes_bp.route("/monitorar", methods=["POST"])
 @jwt_required()
 def configurar_monitoramento():
     """Configurar monitoramento automático"""
     try:
         data = request.get_json()
-        palavras_chave = data.get('palavras_chave', [])
-        portais = data.get('portais', [])
-        email_alertas = data.get('email_alertas', True)
+        palavras_chave = data.get("palavras_chave", [])
+        portais = data.get("portais", [])
+        email_alertas = data.get("email_alertas", True)
         
         # Simular configuração de monitoramento
         config_monitoramento = {
@@ -83,8 +83,8 @@ def configurar_monitoramento():
             "portais": portais,
             "email_alertas": email_alertas,
             "ativo": True,
-            "ultima_busca": datetime.utcnow(),
-            "configurado_em": datetime.utcnow()
+            "ultima_busca": datetime.utcnow().isoformat(),
+            "configurado_em": datetime.utcnow().isoformat()
         }
         
         return jsonify({
@@ -95,7 +95,7 @@ def configurar_monitoramento():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@licitacoes_bp.route('/estatisticas', methods=['GET'])
+@licitacoes_bp.route("/estatisticas", methods=["GET"])
 @jwt_required()
 def get_estatisticas():
     """Obter estatísticas das licitações"""
@@ -104,11 +104,11 @@ def get_estatisticas():
         
         # Calcular estatísticas
         total = len(todas_licitacoes)
-        abertas = len([l for l in todas_licitacoes if l.get('status') == 'Aberta'])
-        urgentes = len([l for l in todas_licitacoes if l.get('data_limite') and 
-                       (l['data_limite'] - datetime.utcnow()).days <= 7])
+        abertas = len([l for l in todas_licitacoes if l.get("status") == "Aberta"])
+        urgentes = len([l for l in todas_licitacoes if l.get("data_limite") and 
+                       (datetime.fromisoformat(l["data_limite"]) - datetime.utcnow()).days <= 7])
         
-        valor_total = sum([l.get('valor_estimado', 0) for l in todas_licitacoes])
+        valor_total = sum([l.get("valor_estimado", 0) for l in todas_licitacoes])
         
         return jsonify({
             "estatisticas": {
@@ -121,4 +121,5 @@ def get_estatisticas():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
